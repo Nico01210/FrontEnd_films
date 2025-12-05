@@ -3,11 +3,14 @@
     
     <H2> Bienvenue sur votre site de film en streaming</H2>
   <div>
-    <SearchBar @search="fetchMovies" />
+    <SearchBar @search="handleSearch" />
     <div class="movie-list">
       <MovieCard v-for="movie in movies" :key="movie.id" :movie="movie" />
     </div>
-    <Pagination :total="totalItems" :currentPage="page" @changePage="fetchMovies" />
+    <div v-if="movies.length === 0 && searchQuery" class="no-results">
+      <p>Aucun film trouvé pour "{{ searchQuery }}"</p>
+    </div>
+    <Pagination :total="totalItems" :currentPage="page" @changePage="changePage" />
   </div>
 </template>
 
@@ -23,20 +26,37 @@ export default {
     return {
       movies: [],
       totalItems: 0,
-      page: 1
+      page: 1,
+      searchQuery: ''
     };
   },
   methods: {
-    async fetchMovies(page = 1) {
+    async fetchMovies(page = 1, search = '') {
       try {
-        const res = await api.get(`/movies?page=${page}`);
-        console.log(res.data);
-        this.movies = res.data.member;
-        this.totalItems = res.data.totalItems;
+        let url = `/movies?page=${page}`;
+        if (search) {
+          url += `&title=${encodeURIComponent(search)}`;
+        }
+        console.log('URL de recherche:', url);
+        const res = await api.get(url);
+        console.log('Résultats de recherche:', res.data);
+        this.movies = res.data.member || res.data['hydra:member'] || [];
+        this.totalItems = res.data.totalItems || res.data['hydra:totalItems'] || 0;
         this.page = page;
       } catch(err) {
-        console.error(err);
+        console.error('Erreur de recherche:', err);
+        this.movies = [];
+        this.totalItems = 0;
       }
+    },
+    handleSearch(query) {
+      console.log('Recherche:', query);
+      this.searchQuery = query;
+      this.page = 1;
+      this.fetchMovies(1, query);
+    },
+    changePage(page) {
+      this.fetchMovies(page, this.searchQuery);
     }
   },
   mounted() {
@@ -54,6 +74,18 @@ export default {
   max-width: 1400px;
   margin: 0 auto;
 }
+
+.no-results {
+  text-align: center;
+  padding: 50px;
+  color: white;
+  font-size: 20px;
+}
+
+.no-results p {
+  margin: 0;
+}
+
 .page-info {
   font-size: 16px;
   color: white;
