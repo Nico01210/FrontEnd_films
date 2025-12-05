@@ -77,9 +77,6 @@ export default {
       }
       return null;
     },
-    duration() {
-      return this.movie?.duration || this.movie?.runtime || null;
-    },
     rating() {
       return this.movie?.imdb?.rating || this.movie?.tomatoes?.rating || null;
     },
@@ -94,11 +91,18 @@ export default {
       return cast.slice(0, 5).map(a => a.fullName).join(', ');
     },
     country() {
-      return this.movie?.country || this.movie?.origin_country || null;
+      // Gérer différents formats de pays
+      if (this.movie?.countries?.length) {
+        return this.movie.countries.map(c => c.label || c.name || c).join(', ');
+      }
+      if (this.movie?.country) {
+        if (typeof this.movie.country === 'string') return this.movie.country;
+        if (this.movie.country.label || this.movie.country.name) {
+          return this.movie.country.label || this.movie.country.name;
+        }
+      }
+      return this.movie?.origin_country || null;
     },
-    language() {
-      return this.movie?.language || this.movie?.original_language || null;
-    }
   },
   methods: {
     async fetchMovie() {
@@ -134,7 +138,7 @@ export default {
 
 .back-button {
   padding: 10px 20px;
-  background-color: #42b983;
+  background-color: #324dc4;
   color: white;
   border: none;
   border-radius: 4px;
@@ -144,7 +148,7 @@ export default {
 }
 
 .back-button:hover {
-  background-color: #359268;
+  background-color: #101e5c;
 }
 
 .movie-content {

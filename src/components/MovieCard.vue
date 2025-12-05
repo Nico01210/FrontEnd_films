@@ -16,7 +16,6 @@
       <!-- Affichage de toutes les propriétés disponibles pour debug -->
       <div class="movie-extra" v-if="hasExtraInfo">
         <p v-if="movie.director">🎬 {{ movie.director }}</p>
-        <p v-if="movie.duration">⏱️ {{ movie.duration }} min</p>
         <p v-if="movie.country">🌍 {{ movie.country }}</p>
         <p v-if="movie.actors">👥 {{ movie.actors }}</p>
       </div>
@@ -75,7 +74,7 @@ export default {
       return null;
     },
     hasExtraInfo() {
-      return this.movie.director || this.movie.duration || this.movie.country || this.movie.actors;
+      return this.movie.director || this.movie.country || this.movie.actors;
     }
   },
   mounted() {
@@ -158,7 +157,7 @@ export default {
 }
 
 .movie-genres {
-  color: #42b983;
+  color: #324dc4;
   font-size: 0.85em;
   font-weight: 600;
   margin: 10px 0;
@@ -177,7 +176,7 @@ export default {
 .view-details {
   display: inline-block;
   padding: 8px 16px;
-  background-color: #42b983;
+  background-color: #324dc4;
   color: white;
   text-decoration: none;
   border-radius: 4px;
@@ -185,6 +184,6 @@ export default {
 }
 
 .view-details:hover {
-  background-color: #359268;
+  background-color: #101e5c;
 }
 </style>

@@ -1,0 +1,19 @@
+body {
+    background: linear-gradient(135deg, #66aaea 0%, #2d4fac 100%);
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+h1 {
+    display: flex;
+    justify-content: center;
+    margin-top: 80px;
+    font-size: 60px;
+    font-family: 'Courier New', Courier, monospace;
+    color: red;
+}
+h2 {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 50px;
+}

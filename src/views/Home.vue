@@ -1,5 +1,7 @@
 <template>
-    <h1></h1>
+    <h1>NETFLOX</h1>
+    
+    <H2> Bienvenue sur votre site de film en streaming</H2>
   <div>
     <SearchBar @search="fetchMovies" />
     <div class="movie-list">
@@ -51,6 +53,11 @@ export default {
   padding: 20px;
   max-width: 1400px;
   margin: 0 auto;
+}
+.page-info {
+  font-size: 16px;
+  color: white;
+  font-weight: 500;
 }
 
 @media (max-width: 768px) {

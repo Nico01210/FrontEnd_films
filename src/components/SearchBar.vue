@@ -51,7 +51,7 @@ export default {
 
 .search-button {
   padding: 12px 24px;
-  background-color: #42b983;
+  background-color: #324dc4;
   color: white;
   border: none;
   border-radius: 25px;
@@ -61,6 +61,6 @@ export default {
 }
 
 .search-button:hover {
-  background-color: #359268;
+  background-color: #101e5c;
 }
 </style>

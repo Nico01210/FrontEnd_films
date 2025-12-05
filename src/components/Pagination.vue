@@ -62,7 +62,7 @@ export default {
 
 .page-button {
   padding: 10px 20px;
-  background-color: #42b983;
+  background-color: #324dc4;
   color: white;
   border: none;
   border-radius: 5px;
@@ -72,7 +72,7 @@ export default {
 }
 
 .page-button:hover:not(:disabled) {
-  background-color: #359268;
+  background-color: #101e5c;
 }
 
 .page-button:disabled {
@@ -82,7 +82,7 @@ export default {
 
 .page-info {
   font-size: 16px;
-  color: #555;
+  color: white;
   font-weight: 500;
 }
 </style>
