@@ -184,6 +184,6 @@ export default {
 }
 
 .view-details:hover {
-  background-color: #101e5c;
+  background-color:#101e5c ;
 }
 </style>

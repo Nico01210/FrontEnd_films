@@ -1,6 +1,5 @@
 <template>
   <div class="movie-detail" v-if="movie">
-    <button @click="$router.back()" class="back-button">← Retour</button>
     
     <div class="movie-content">
       <div v-if="posterUrl" class="movie-poster-container">
@@ -46,6 +45,8 @@
   <div v-else class="loading">
     <p>Chargement...</p>
   </div>
+      <button @click="$router.back()" class="back-button">← Retour</button>
+
 </template>
 
 <script>
@@ -144,7 +145,10 @@ export default {
   border-radius: 4px;
   cursor: pointer;
   font-size: 16px;
+  margin-left: auto;
+  display: block;
   margin-bottom: 20px;
+  margin-right: 450px;
 }
 
 .back-button:hover {
@@ -154,7 +158,7 @@ export default {
 .movie-content {
   display: flex;
   gap: 30px;
-  background: white;
+  background: rgb(218, 213, 213);
   padding: 30px;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
