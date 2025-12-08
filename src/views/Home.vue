@@ -40,11 +40,12 @@ export default {
       this.loading = true;
       this.error = null;
       try {
-        let url = `movies?page=${page}`;  // ← Enlevé le / au début
+        let url = `/movies?page=${page}`;
         if (search) {
           url += `&title=${encodeURIComponent(search)}`;
         }
         console.log('URL de recherche:', url);
+        console.log('Base URL:', api.defaults.baseURL);
         const res = await api.get(url);
         console.log('Résultats de recherche:', res.data);
         this.movies = res.data.member || res.data['hydra:member'] || [];
