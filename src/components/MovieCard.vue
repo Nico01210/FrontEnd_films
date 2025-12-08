@@ -44,35 +44,33 @@ export default {
       return this.movie.id || this.movie['@id']?.split('/').pop();
     },
     posterUrl() {
-      const poster = this.movie.posterUrl || this.movie.poster || this.movie.posterPath || this.movie.poster_path;
+      const poster = this.movie.poster || this.movie.posterUrl || this.movie.posterPath || this.movie.poster_path;
       if (!poster) return null;
-      
-      // Debug: afficher la valeur du poster
-      if (this.movie.id === this.movie.id) { // Premier film seulement
-        console.log('Poster brut:', poster);
-      }
       
       // Si l'URL commence déjà par http/https, la retourner telle quelle
       if (poster.startsWith('http://') || poster.startsWith('https://')) {
         return poster;
       }
       
-      // L'API retourne juste le nom de fichier, il faut peut-être utiliser votre serveur backend
-      // ou un proxy. Pour l'instant, retournons null pour afficher le placeholder
+      // L'API retourne juste le nom de fichier, retournons null pour afficher le placeholder
       return null;
     },
     releaseYear() {
-      const date = this.movie.releaseDate || this.movie.release_date || this.movie.releasedAt;
-      return date ? new Date(date).getFullYear() : null;
+      // L'API retourne directement 'year' comme nombre
+      const year = this.movie.year || this.movie.releaseDate || this.movie.release_date || this.movie.releasedAt;
+      if (typeof year === 'number') return year;
+      return year ? new Date(year).getFullYear() : null;
     },
     description() {
-      const desc = this.movie.description || this.movie.overview || this.movie.synopsis;
+      // L'API retourne 'plot' pour la description
+      const desc = this.movie.plot || this.movie.description || this.movie.overview || this.movie.synopsis;
       if (!desc) return null;
       // Tronquer la description à 150 caractères pour la carte
       return desc.length > 150 ? desc.substring(0, 150) + '...' : desc;
     },
     rating() {
-      const rate = this.movie.rating || this.movie.vote_average || this.movie.score;
+      // L'API retourne imdb.rating ou tomatoes.rating
+      const rate = this.movie.imdb?.rating || this.movie.tomatoes?.rating || this.movie.rating || this.movie.vote_average || this.movie.score;
       if (!rate) return null;
       return typeof rate === 'number' ? rate.toFixed(1) : rate;
     },
@@ -82,7 +80,7 @@ export default {
           return this.movie.genres.map(g => {
             if (typeof g === 'string') return g;
             if (typeof g === 'object' && g !== null) {
-              return g.name || g.label || JSON.stringify(g);
+              return g.label || g.name || String(g);
             }
             return String(g);
           }).join(', ');
@@ -96,11 +94,6 @@ export default {
     hasExtraInfo() {
       return this.movie.director || this.movie.country || this.movie.actors;
     }
-  },
-  mounted() {
-    // Debug temporaire pour voir la structure des données
-    console.log('Movie data:', this.movie);
-    console.log('Propriétés disponibles:', Object.keys(this.movie));
   }
 };
 </script>

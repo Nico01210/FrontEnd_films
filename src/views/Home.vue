@@ -1,14 +1,17 @@
 <template>
-    <h1>NETFLOX</h1>
-    
-    <h2> Bienvenue sur votre site de film en streaming</h2>
-  <div>
+  <div class="home">
+    <h2 class="welcome"> Bienvenue sur votre site de film en streaming</h2>
     <SearchBar @search="handleSearch" />
     <div class="movie-list">
       <MovieCard v-for="movie in movies" :key="movie.id" :movie="movie" />
     </div>
-    <div v-if="movies.length === 0 && searchQuery" class="no-results">
-      <p>Aucun film trouvé pour "{{ searchQuery }}"</p>
+    <div v-if="movies.length === 0 && !loading" class="no-results">
+      <p v-if="searchQuery">Aucun film trouvé pour "{{ searchQuery }}"</p>
+      <p v-else-if="error">{{ error }}</p>
+      <p v-else>Aucun film disponible</p>
+    </div>
+    <div v-if="loading" class="loading">
+      <p>Chargement...</p>
     </div>
     <Pagination :total="totalItems" :currentPage="page" @changePage="changePage" />
   </div>
@@ -27,13 +30,17 @@ export default {
       movies: [],
       totalItems: 0,
       page: 1,
-      searchQuery: ''
+      searchQuery: '',
+      loading: false,
+      error: null
     };
   },
   methods: {
     async fetchMovies(page = 1, search = '') {
+      this.loading = true;
+      this.error = null;
       try {
-        let url = `/movies?page=${page}`;
+        let url = `movies?page=${page}`;  // ← Enlevé le / au début
         if (search) {
           url += `&title=${encodeURIComponent(search)}`;
         }
@@ -45,8 +52,13 @@ export default {
         this.page = page;
       } catch(err) {
         console.error('Erreur de recherche:', err);
+        console.error('Détails:', err.response?.data);
+        console.error('Status:', err.response?.status);
+        this.error = 'Erreur lors du chargement des films. Vérifiez que votre serveur backend est démarré.';
         this.movies = [];
         this.totalItems = 0;
+      } finally {
+        this.loading = false;
       }
     },
     handleSearch(query) {
@@ -66,6 +78,17 @@ export default {
 </script>
 
 <style scoped>
+.home {
+  padding: 20px 0;
+}
+
+.welcome {
+  text-align: center;
+  color: white;
+  font-size: 24px;
+  margin: 20px 0;
+}
+
 .movie-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -75,15 +98,21 @@ export default {
   margin: 0 auto;
 }
 
-.no-results {
+.no-results,
+.loading {
   text-align: center;
   padding: 50px;
   color: white;
   font-size: 20px;
 }
 
-.no-results p {
+.no-results p,
+.loading p {
   margin: 0;
+}
+
+.error {
+  color: #ff6b6b;
 }
 
 .page-info {
