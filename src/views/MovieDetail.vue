@@ -29,32 +29,34 @@
           <p v-if="actors"><strong>👥 Acteurs :</strong> {{ actors }}</p>
           <p v-if="country"><strong>🌍 Pays :</strong> {{ country }}</p>
         </div>
-        
-        <!-- Debug: Afficher toutes les propriétés disponibles -->
-        <details class="debug-info">
-          <summary>🔍 Données brutes (debug)</summary>
-          <pre>{{ movie }}</pre>
-        </details>
       </div>
     </div>
+    
+    <!-- Section des commentaires -->
+    <MovieComments v-if="movie" :movieId="movieId" />
+    
+    <button @click="$router.back()" class="back-button">← Retour</button>
   </div>
   <div v-else class="loading">
     <p>Chargement...</p>
   </div>
-      <button @click="$router.back()" class="back-button">← Retour</button>
-
 </template>
 
 <script>
 import api from '../api/axios.js';
+import MovieComments from '../components/MovieComments.vue';
 
 export default {
+  components: { MovieComments },
   data() {
     return {
       movie: null
     };
   },
   computed: {
+    movieId() {
+      return this.$route.params.id;
+    },
     movieTitle() {
       return this.movie?.title || 'Titre inconnu';
     },
@@ -150,10 +152,8 @@ export default {
   border-radius: 4px;
   cursor: pointer;
   font-size: 16px;
-  margin-left: auto;
+  margin: 30px auto 20px;
   display: block;
-  margin-bottom: 20px;
-  margin-right: 450px;
 }
 
 .back-button:hover {

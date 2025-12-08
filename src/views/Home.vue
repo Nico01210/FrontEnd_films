@@ -1,6 +1,6 @@
 <template>
   <div class="home">
-    <h2 class="welcome"> Bienvenue sur votre site de film en streaming</h2>
+    <h2 class="welcome"> Bienvenue sur votre site de films en streaming</h2>
     <SearchBar @search="handleSearch" />
     <div class="movie-list">
       <MovieCard v-for="movie in movies" :key="movie.id" :movie="movie" />
