@@ -65,8 +65,8 @@
       <div v-else>
         <div v-for="comment in comments" :key="comment['@id'] || comment.id" class="comment-item">
           <div class="comment-header">
-            <strong>{{ comment.author || comment.username }}</strong>
-            <span class="comment-date">{{ formatDate(comment.createdAt || comment.publishedAt) }}</span>
+            <strong>{{ comment.user?.username || 'Utilisateur' }}</strong>
+            <span class="comment-date">{{ formatDate(comment.createdAt) }}</span>
           </div>
           <p class="comment-text">{{ comment.content }}</p>
         </div>
@@ -96,13 +96,19 @@ export default {
       editing: false,
       submitting: false,
       error: null,
-      isLoggedIn: false
+      isLoggedIn: false,
+      currentUserId: null,
+      currentUsername: null
     };
   },
   methods: {
     checkAuth() {
       const token = localStorage.getItem('token');
       this.isLoggedIn = !!token;
+      // Récupérer les infos de l'utilisateur depuis localStorage
+      this.currentUsername = localStorage.getItem('username');
+      this.currentUserId = localStorage.getItem('userId');
+      console.log('Auth check:', { isLoggedIn: this.isLoggedIn, username: this.currentUsername, userId: this.currentUserId });
     },
     
     async fetchComments() {
@@ -119,9 +125,9 @@ export default {
         console.log('Comments array:', this.comments);
         
         // Trouver le commentaire de l'utilisateur actuel
-        const username = localStorage.getItem('username');
-        if (username && Array.isArray(this.comments)) {
-          this.userComment = this.comments.find(c => c.author === username || c.username === username);
+        // L'API retourne user: { id, username, ... }
+        if (this.currentUsername && Array.isArray(this.comments)) {
+          this.userComment = this.comments.find(c => c.user?.username === this.currentUsername);
           console.log('Commentaire de l\'utilisateur:', this.userComment);
         }
       } catch(err) {
@@ -144,7 +150,8 @@ export default {
         };
         console.log('Envoi du commentaire:', payload);
         
-        const res = await api.post(`/reviews`, payload);
+        // Envoyer à l'endpoint spécifique du film
+        const res = await api.post(`/movies/${this.movieId}/reviews`, payload);
         console.log('Réponse du serveur:', res.data);
         
         this.userComment = res.data;
@@ -178,15 +185,18 @@ export default {
       this.error = null;
       
       try {
-        // Extraire l'ID de l'IRI si nécessaire
-        const reviewId = this.userComment['@id'] || this.userComment.id;
-        const res = await api.put(`${reviewId}`, {
+        const reviewId = this.userComment.id;
+        const res = await api.patch(`/reviews/${reviewId}`, {
           content: this.editCommentText.trim()
+        }, {
+          headers: {
+            'Content-Type': 'application/merge-patch+json'
+          }
         });
         
         this.userComment = res.data;
         // Mettre à jour dans la liste
-        const index = this.comments.findIndex(c => c.id === this.userComment.id || c['@id'] === this.userComment['@id']);
+        const index = this.comments.findIndex(c => c.id === this.userComment.id);
         if (index !== -1) {
           this.comments[index] = res.data;
         }
@@ -209,14 +219,11 @@ export default {
       this.error = null;
       
       try {
-        // Extraire l'ID de l'IRI si nécessaire
-        const reviewId = this.userComment['@id'] || `/api/reviews/${this.userComment.id}`;
-        await api.delete(reviewId);
+        const reviewId = this.userComment.id;
+        await api.delete(`/reviews/${reviewId}`);
         
         // Retirer de la liste
-        this.comments = this.comments.filter(c => 
-          (c.id !== this.userComment.id) && (c['@id'] !== this.userComment['@id'])
-        );
+        this.comments = this.comments.filter(c => c.id !== this.userComment.id);
         this.userComment = null;
       } catch(err) {
         this.error = err.response?.data?.message || err.response?.data?.detail || 'Erreur lors de la suppression du commentaire';
