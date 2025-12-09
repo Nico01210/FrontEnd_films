@@ -31,6 +31,12 @@
         </div>
       </div>
     </div>
+
+      <!-- Section des notes utilisateur (contribution) -->
+    <StarRating v-if="movie" :movieId="movieId" @rating-updated="refreshRatings" />
+    
+    <!-- Section des notes publiques (affichage) -->
+    <MovieRatingsDisplay v-if="movie" :key="ratingsRefreshKey" :movieId="movieId" />
     
     <!-- Section des commentaires -->
     <MovieComments v-if="movie" :movieId="movieId" />
@@ -45,12 +51,16 @@
 <script>
 import api from '../api/axios.js';
 import MovieComments from '../components/MovieComments.vue';
+import StarRating from '../components/StarRating.vue';
+import MovieRatingsDisplay from '../components/MovieRatingsDisplay.vue';
+
 
 export default {
-  components: { MovieComments },
+  components: { StarRating, MovieComments, MovieRatingsDisplay },
   data() {
     return {
-      movie: null
+      movie: null,
+      ratingsRefreshKey: 0
     };
   },
   computed: {
@@ -129,6 +139,10 @@ export default {
       return new Date(date, 0).toLocaleDateString('fr-FR', {
         year: 'numeric',
       });
+    },
+    refreshRatings() {
+      // Forcer le rechargement du composant MovieRatingsDisplay en changeant la clé
+      this.ratingsRefreshKey++;
     }
   },
   mounted() {
@@ -152,8 +166,10 @@ export default {
   border-radius: 4px;
   cursor: pointer;
   font-size: 16px;
-  margin: 30px auto 20px;
-  display: block;
+  margin: 30px 0 30px auto;
+  display: flex;
+  justify-content: end;
+  align-items: end;
 }
 
 .back-button:hover {
