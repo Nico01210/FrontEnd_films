@@ -89,12 +89,15 @@ export default {
   methods: {
     async fetchRatings() {
       try {
-        // Récupérer les ratings du film
-        const res = await api.get(`/movies/${this.movieId}/ratings`);
+        // Récupérer TOUTES les ratings du film (sans pagination)
+        const res = await api.get(`/movies/${this.movieId}/ratings`, {
+          params: { pagination: false }
+        });
         const ratingsData = res.data.member || res.data['hydra:member'] || [];
         this.ratings = Array.isArray(ratingsData) ? ratingsData : [];
 
-        console.log('Ratings reçus:', this.ratings);
+        console.log('✅ TOUTES les ratings reçues:', this.ratings.length, 'ratings');
+        console.log('Contenu complet:', this.ratings);
 
         // Récupérer le résumé et la note combinée du film
         const movieRes = await api.get(`/movies/${this.movieId}`);

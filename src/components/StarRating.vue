@@ -86,22 +86,37 @@ export default {
     
     async fetchUserRating() {
       try {
-        // Récupérer la note de l'utilisateur
-        const res = await api.get(`/movies/${this.movieId}/ratings`);
+        // Récupérer TOUTES les notes du film pour s'assurer d'avoir les bonnes données
+        const res = await api.get(`/movies/${this.movieId}/ratings`, {
+          params: {
+            pagination: false // Récupérer toutes les notes sans pagination
+          }
+        });
         const ratings = res.data.member || res.data['hydra:member'] || [];
+        
+        console.log('Toutes les ratings du film:', ratings);
+        console.log('Utilisateur actuel:', this.currentUsername);
         
         // Réinitialiser d'abord
         this.userRating = null;
         this.userRatingObject = null;
         
-        // Trouver la note de l'utilisateur actuel
+        // Trouver la note de l'utilisateur actuel (filtrage strict par username)
         if (this.currentUsername && ratings.length > 0) {
-          const myRating = ratings.find(r => r.user?.username === this.currentUsername);
+          const myRating = ratings.find(r => {
+            const ratingUsername = r.user?.username;
+            const matches = ratingUsername === this.currentUsername;
+            console.log(`Vérification: ${ratingUsername} === ${this.currentUsername} = ${matches}`);
+            return matches;
+          });
+          
           if (myRating) {
             this.userRating = myRating.note || myRating.score;
-            this.userRatingObject = myRating; // Stocker l'objet entier avec l'ID
-            console.log('Note de l\'utilisateur trouvée:', this.userRating);
-            console.log('Objet rating:', this.userRatingObject);
+            this.userRatingObject = myRating;
+            console.log('✅ Note de l\'utilisateur trouvée:', this.userRating, 'pour', this.currentUsername);
+            console.log('Objet rating complet:', this.userRatingObject);
+          } else {
+            console.log('❌ Aucune note trouvée pour l\'utilisateur:', this.currentUsername);
           }
         }
       } catch(err) {
@@ -116,27 +131,30 @@ export default {
       this.error = null;
       
       try {
-        if (this.editMode && this.userRatingObject) {
-          // Mode modification : utiliser l'ID stocké
+        if (this.userRatingObject) {
+          // Une note existe déjà : utiliser PATCH pour modifier (même si pas en editMode)
           const ratingId = this.userRatingObject.id;
-          console.log('Modification de la note:', ratingId);
+          console.log('Modification de la note existante:', ratingId);
           
-          await api.patch(`/ratings/${ratingId}`, { note: this.selectedRating }, {
+          const res = await api.patch(`/ratings/${ratingId}`, { note: this.selectedRating }, {
             headers: { 'Content-Type': 'application/merge-patch+json' }
           });
+          this.userRatingObject = res.data;
+          this.userRating = res.data.note;
           this.editMode = false;
         } else {
-          // Mode création : POST nouvelle note
+          // Pas de note existante : créer avec POST
           const payload = {
             note: this.selectedRating,
             movie: `/api/movies/${this.movieId}`
           };
           
-          console.log('Envoi de la note:', payload);
-          await api.post(`/movies/${this.movieId}/ratings`, payload);
+          console.log('Création d\'une nouvelle note:', payload);
+          const res = await api.post(`/movies/${this.movieId}/ratings`, payload);
+          this.userRatingObject = res.data;
+          this.userRating = res.data.note;
         }
         
-        this.userRating = this.selectedRating;
         this.selectedRating = 0;
         
         // Recharger les notes

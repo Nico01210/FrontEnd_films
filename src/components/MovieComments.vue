@@ -114,7 +114,11 @@ export default {
     async fetchComments() {
       try {
         console.log('Chargement des commentaires pour le film:', this.movieId);
-        const res = await api.get(`/movies/${this.movieId}/reviews`);
+        const res = await api.get(`/movies/${this.movieId}/reviews`, {
+          params: {
+            pagination: false // Récupérer tous les commentaires
+          }
+        });
         console.log('Commentaires reçus:', res.data);
         
         // API Platform utilise 'member' (pas hydra:member)
@@ -122,13 +126,18 @@ export default {
         this.comments = Array.isArray(commentsData) ? commentsData : [];
         
         console.log('Nombre de commentaires:', this.comments.length);
-        console.log('Comments array:', this.comments);
+        console.log('Tous les commentaires:', this.comments);
         
-        // Trouver le commentaire de l'utilisateur actuel
-        // L'API retourne user: { id, username, ... }
+        // Trouver le commentaire de l'utilisateur actuel avec vérification stricte
+        this.userComment = null;
         if (this.currentUsername && Array.isArray(this.comments)) {
-          this.userComment = this.comments.find(c => c.user?.username === this.currentUsername);
-          console.log('Commentaire de l\'utilisateur:', this.userComment);
+          this.userComment = this.comments.find(c => {
+            const commentUsername = c.user?.username;
+            const matches = commentUsername === this.currentUsername;
+            console.log(`Vérification commentaire: ${commentUsername} === ${this.currentUsername} = ${matches}`);
+            return matches;
+          });
+          console.log('✅ Commentaire de l\'utilisateur trouvé:', this.userComment ? this.userComment.content : 'AUCUN', 'pour', this.currentUsername);
         }
       } catch(err) {
         console.error('Erreur lors du chargement des commentaires:', err);
@@ -144,21 +153,36 @@ export default {
       this.error = null;
       
       try {
-        const payload = {
-          content: this.newCommentText.trim(),
-          movie: `/api/movies/${this.movieId}`
-        };
-        console.log('Envoi du commentaire:', payload);
+        if (this.userComment) {
+          // Un commentaire existe déjà : utiliser PATCH pour modifier
+          const commentId = this.userComment.id;
+          console.log('Modification du commentaire existant:', commentId);
+          
+          const res = await api.patch(`/reviews/${commentId}`, 
+            { content: this.newCommentText.trim() },
+            { headers: { 'Content-Type': 'application/merge-patch+json' } }
+          );
+          this.userComment = res.data;
+        } else {
+          // Pas de commentaire existant : créer avec POST
+          const payload = {
+            content: this.newCommentText.trim(),
+            movie: `/api/movies/${this.movieId}`
+          };
+          console.log('Création d\'un nouveau commentaire:', payload);
+          
+          const res = await api.post(`/movies/${this.movieId}/reviews`, payload);
+          console.log('Réponse du serveur:', res.data);
+          this.userComment = res.data;
+        }
         
-        // Envoyer à l'endpoint spécifique du film
-        const res = await api.post(`/movies/${this.movieId}/reviews`, payload);
-        console.log('Réponse du serveur:', res.data);
-        
-        this.userComment = res.data;
         this.newCommentText = '';
         
         // Recharger tous les commentaires pour être sûr d'avoir la liste à jour
         await this.fetchComments();
+        
+        // Émettre un événement pour rafraîchir l'affichage
+        this.$emit('comment-updated');
       } catch(err) {
         console.error('Erreur complète:', err);
         console.error('Réponse du serveur:', err.response?.data);
