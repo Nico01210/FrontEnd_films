@@ -164,14 +164,14 @@ export default {
           );
           this.userComment = res.data;
         } else {
-          // Pas de commentaire existant : créer avec POST
+          // Pas de commentaire existant : créer avec POST sur /api/reviews
           const payload = {
             content: this.newCommentText.trim(),
             movie: `/api/movies/${this.movieId}`
           };
           console.log('Création d\'un nouveau commentaire:', payload);
           
-          const res = await api.post(`/movies/${this.movieId}/reviews`, payload);
+          const res = await api.post(`/reviews`, payload);
           console.log('Réponse du serveur:', res.data);
           this.userComment = res.data;
         }

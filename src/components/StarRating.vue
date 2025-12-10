@@ -143,14 +143,14 @@ export default {
           this.userRating = res.data.note;
           this.editMode = false;
         } else {
-          // Pas de note existante : créer avec POST
+          // Pas de note existante : créer avec POST sur /api/ratings
           const payload = {
             note: this.selectedRating,
             movie: `/api/movies/${this.movieId}`
           };
           
           console.log('Création d\'une nouvelle note:', payload);
-          const res = await api.post(`/movies/${this.movieId}/ratings`, payload);
+          const res = await api.post(`/ratings`, payload);
           this.userRatingObject = res.data;
           this.userRating = res.data.note;
         }
